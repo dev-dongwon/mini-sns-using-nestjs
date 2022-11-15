@@ -7,9 +7,10 @@ const config: PostgresConnectionOptions = {
   username: "sns",
   password: "123",
   database: "sns",
-  entities: [__dirname + "/**/*.entity{.ts, .js}"],
-  // object랑 싱크 맞춰서 자동으로 테이블 만들어줌. 편하네!
-  synchronize: true,
+  entities: [__dirname + "/**/*.entity{.ts,.js}"],
+  // Entity의 수정사항을 자동으로 DB에 갱신시켜줌. 이 기능이 편한건 맞지만 간혹 특정 데이터를 아예 밀어버릴 수 있기 때문에 production 레벨에서는 안전하지 않음.
+  synchronize: false,
+  migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
 }
 
 export default config;
