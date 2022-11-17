@@ -20,12 +20,11 @@ export class UserEntity {
   @Column({ default: "" })
   image: string;
 
-  @Column({ default: "" })
+  @Column({ select: false })
   password: string;
 
   @BeforeInsert()
   async hashPassword() {
     this.password = await hash(this.password, 10);
-  }
-  
+  } 
 }
