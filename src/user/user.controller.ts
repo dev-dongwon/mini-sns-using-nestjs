@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { UserService } from "@app/user/user.service";
 import { CreateUserDto } from "@app/user/dto/createUser.dto";
 import { UserResponseInterface } from "./types/userResponse.interface";
@@ -6,6 +6,7 @@ import { LoginUserDto } from "./dto/loginUser.dto";
 import { ExpressRequest } from "./types/expressRequest.interface";
 import { User } from "@app/user/decorators/user.decorator";
 import { UserEntity } from "./user.entity";
+import { AuthGuard } from "./guards/auth.guard";
 
 @Controller()
 export class userController {
@@ -28,7 +29,7 @@ export class userController {
   }
 
   @Get("users")
-  @UsePipes(new ValidationPipe())
+  @UseGuards(AuthGuard)
   async currentUser(
     @Req() request: ExpressRequest,
     @User() user: UserEntity,
