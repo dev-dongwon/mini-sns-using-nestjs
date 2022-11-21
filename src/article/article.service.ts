@@ -5,6 +5,7 @@ import { Repository } from "typeorm";
 import { CreateArticleDto } from "./dto/createArticle.dto";
 import { UserEntity } from "@app/user/user.entity";
 import { ArticleResponseInterface } from "./types/articleResponse.interface";
+import slugify from "slugify";
 
 @Injectable()
 export class ArticleService {
@@ -21,15 +22,25 @@ export class ArticleService {
       article.tagList = [];
     }
 
-    article.slug = "foo";
+    article.slug = this.getSlug(createArticleDto.title);
     article.author = currentUser;
 
     return await this.articleRepository.save(article);
+  }
+
+  async findBySlug(slug: string): Promise<ArticleEntity> {
+    return await this.articleRepository.findOneBy({ slug });
   }
 
   buildArticleResponse(article: ArticleEntity): ArticleResponseInterface {
     return {
       article
     }
+  }
+
+  private getSlug(title: string): string {
+    return slugify(title, {
+      lower: true
+    }) + "-" + ((Math.random() * Math.pow(36,6)) | 0).toString(36);
   }
 }
