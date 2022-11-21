@@ -52,6 +52,22 @@ export class ArticleService {
     return await this.articleRepository.delete({ slug })
   }
 
+  async updateArticle(slug: string, updateArticleDto: CreateArticleDto, currentUserId: number): Promise<ArticleEntity> {
+    const article = await this.findBySlug(slug);
+
+    if (!article) {
+      throw new HttpException("Article is not found", HttpStatus.NOT_FOUND);
+    }
+
+    if (article.author.id !== currentUserId) {
+      throw new HttpException("Not Author", HttpStatus.FORBIDDEN);
+    }
+
+    Object.assign(article, updateArticleDto);
+
+    return await this.articleRepository.save(article);
+  }
+
   private getSlug(title: string): string {
     return slugify(title, {
       lower: true
