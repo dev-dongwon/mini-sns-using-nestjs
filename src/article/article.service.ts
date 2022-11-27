@@ -42,6 +42,33 @@ export class ArticleService {
       });
     }
 
+    if (query.favorited) {
+      // favorite한 user를 우선 찾고
+      const user = await this.userRepository.findOne({
+        where: { username: query.favorited },
+        relations: ["favorites"]
+      })
+
+      if (!user) {
+        // 유저가 없을때는 에러를 던져줘서 프론트가 어떻게 보여줄 지 판단하게 하는게 맞나? 나라면 에러를 던진다
+        throw new HttpException("not exist user", HttpStatus.NOT_FOUND)
+      }
+
+      const ids = user.favorites.map((r) => r.id);
+      
+      // favorite한 article이 있으면 
+      if (ids.length > 0) {
+        // articles에서 해당 article을 찾고
+        queryBuilder.andWhere("articles.id IN (:...ids)", { ids })
+      } else {
+        // 아니면 걍 빈 array 리턴.
+        // set always false, return empty array
+        queryBuilder.andWhere("1=0")
+      }
+
+      console.log("author", user);
+    }
+
     queryBuilder.orderBy("articles.createdAt", "DESC");
     const articlesCount = await queryBuilder.getCount();
 
@@ -54,10 +81,28 @@ export class ArticleService {
       queryBuilder.offset(query.offset);
     }
 
+    let favoritesId = new Set<number>();
+
+    if (currentUserId) {
+      const user = await this.userRepository.findOne({
+        where: { id: currentUserId },
+        relations: ["favorites"]
+      });
+
+      user.favorites.map((r) => favoritesId.add(r.id));
+    }
+
     const articles = await queryBuilder.getMany();
+    const articleWithFavorite = articles.map((r) => {
+      if (favoritesId.has(r.id)) {
+        return { ...r, favorited: true}
+      }
+
+      return { ...r, favorited: false}
+    })
 
     return {
-      articles,
+      articles: articleWithFavorite,
       articlesCount
     }
   }
@@ -92,6 +137,28 @@ export class ArticleService {
     if (isNotFavorites) {
       user.favorites.push(article);
       article.favoritesCount++;
+
+      await Promise.all([
+        this.userRepository.save(user),
+        this.articleRepository.save(article)
+      ])
+    }
+
+    return article;
+  }
+
+  async deleteArticleToFavorites(slug: string, currentUserId: number): Promise<ArticleEntity> {
+    const article = await this.findBySlug(slug);
+    const user = await this.userRepository.findOne({
+      where: { id: currentUserId },
+      relations: ["favorites"]
+    })
+
+    const articleIndex = user.favorites.findIndex(articleInFavorite => articleInFavorite.id === article.id);
+
+    if (articleIndex >= 0) {
+      user.favorites.splice(articleIndex, 1);
+      article.favoritesCount--;
 
       await Promise.all([
         this.userRepository.save(user),
