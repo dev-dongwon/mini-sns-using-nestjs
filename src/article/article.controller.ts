@@ -7,17 +7,25 @@ import { UserEntity } from "@app/user/user.entity";
 import { ArticleResponseInterface } from "./types/articleResponse.interface";
 import { ArticlesResponseInterface } from "./types/articlesResponse.interface";
 
-@Controller("articles")
+@Controller('articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @Get()
   async findAll(
-    @User("id") currentUserId: number, 
+    @User('id') currentUserId: number,
     @Query() query: any,
-
   ): Promise<ArticlesResponseInterface> {
-    return this.articleService.findAll(currentUserId, query)
+    return this.articleService.findAll(currentUserId, query);
+  }
+
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  async getFeed(
+    @User('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articleService.getFeed(currentUserId, query);
   }
 
   @Post()
@@ -25,54 +33,73 @@ export class ArticleController {
   @UsePipes(new ValidationPipe())
   async create(
     @User() currentUser: UserEntity,
-    @Body("article") createArticleDto: CreateArticleDto
+    @Body('article') createArticleDto: CreateArticleDto,
   ): Promise<ArticleResponseInterface> {
-    const article = await this.articleService.createArticle(currentUser, createArticleDto);
+    const article = await this.articleService.createArticle(
+      currentUser,
+      createArticleDto,
+    );
 
     return this.articleService.buildArticleResponse(article);
   }
 
-  @Get(":slug")
+  @Get(':slug')
   async getSingleArticle(
-    @Param("slug") slug:string
+    @Param('slug') slug: string,
   ): Promise<ArticleResponseInterface> {
     const article = await this.articleService.findBySlug(slug);
 
     return this.articleService.buildArticleResponse(article);
   }
 
-  @Delete(":slug")
+  @Delete(':slug')
   @UseGuards(AuthGuard)
   async deleteSingleArticle(
-    @User("id") currentUserId: number,
-    @Param("slug") slug:string,
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
   ) {
     return await this.articleService.deleteArticle(slug, currentUserId);
   }
 
-  @Put(":slug")
+  @Put(':slug')
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
   async updateArticle(
-    @User("id") currentUserId: number,
-    @Param("slug") slug:string,
-    @Body("article") updateArticleDto: CreateArticleDto 
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+    @Body('article') updateArticleDto: CreateArticleDto,
   ) {
-    const article = await this.articleService.updateArticle(slug, updateArticleDto, currentUserId);
+    const article = await this.articleService.updateArticle(
+      slug,
+      updateArticleDto,
+      currentUserId,
+    );
     return this.articleService.buildArticleResponse(article);
   }
 
-  @Post(":slug/favorite")
+  @Post(':slug/favorite')
   @UseGuards(AuthGuard)
-  async addArticleToFavorites(@User("id") currentUserId: number, @Param("slug") slug: string) {
-    const article = await this.articleService.addArticleToFavorites(slug, currentUserId);
+  async addArticleToFavorites(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ) {
+    const article = await this.articleService.addArticleToFavorites(
+      slug,
+      currentUserId,
+    );
     return this.articleService.buildArticleResponse(article);
   }
 
-  @Delete(":slug/favorite")
+  @Delete(':slug/favorite')
   @UseGuards(AuthGuard)
-  async deleteArticleToFavorites(@User("id") currentUserId: number, @Param("slug") slug: string) {
-    const article = await this.articleService.deleteArticleToFavorites(slug, currentUserId);
+  async deleteArticleToFavorites(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ) {
+    const article = await this.articleService.deleteArticleToFavorites(
+      slug,
+      currentUserId,
+    );
     return this.articleService.buildArticleResponse(article);
   }
 }
