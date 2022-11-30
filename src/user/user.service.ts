@@ -18,25 +18,34 @@ export class UserService {
   ) {}
   
   async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const errorResponse = {
+      errors: {},
+    };
+
     const userByEmail = await this.userRepository.findOne({
-      where: { email: createUserDto.email }
+      where: { email: createUserDto.email },
     });
 
     const userByUsername = await this.userRepository.findOne({
-      where: { username: createUserDto.username }
+      where: { username: createUserDto.username },
     });
 
+    if (userByEmail) {
+      errorResponse.errors['email'] = 'has already been taken';
+    }
+
+    if (userByEmail) {
+      errorResponse.errors['username'] = 'has already been taken';
+    }
+
     if (userByEmail || userByUsername) {
-      throw new HttpException(
-        "Email or username are duplicated",
-        HttpStatus.UNPROCESSABLE_ENTITY
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     const newUser = new UserEntity();
     Object.assign(newUser, createUserDto);
 
-    return await this.userRepository.save(newUser); 
+    return await this.userRepository.save(newUser);
   }
 
   async findById(id: number): Promise<UserEntity> {
@@ -46,25 +55,25 @@ export class UserService {
   };
 
   async login(loginUserDto: LoginUserDto): Promise<UserEntity> {
+    const errorResponse = {
+      errors: {
+        'email or password': 'is Invalid',
+      },
+    };
+
     const user = await this.userRepository.findOne({
       where: { email: loginUserDto.email },
       select: [ "id", "username", "bio", "email", "image", "password" ]
     });
 
     if (!user) {
-      throw new HttpException(
-        "credentials are not valid",
-        HttpStatus.UNPROCESSABLE_ENTITY
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     const isPasswordCorrect = await compare(loginUserDto.password, user.password);
 
     if (!isPasswordCorrect) {
-      throw new HttpException(
-        "credentials are not valid",
-        HttpStatus.UNPROCESSABLE_ENTITY
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     delete user.password;
