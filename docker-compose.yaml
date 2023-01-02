@@ -1,0 +1,29 @@
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      # Only will build development stage from our dockerfile
+      target: builder
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - .local.env
+    # Run a command against the development stage of the image
+    command: yarn start
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: docker.for.mac.host.internal #세상에... 이걸... 알았어야 된다고...?
+  postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '5432:5432'
