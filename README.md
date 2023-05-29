@@ -1,211 +1,32 @@
-# Endpoints
-## Authentication Header:
-You can read the authentication header from the headers of the request
+# nest.js로 간단한 SNS API 구축해보기
 
-Authorization: Token jwt.token.here
+**요약**
 
-## Authentication:
-`POST /api/users/login`
+- nest.js를 활용해 api를 만들어보며 기존에 쓰던 framework와 **비교 학습**
 
-Example request body:
-```json
-{
-  "user":{
-    "email": "jake@jake.jake",
-    "password": "jakejake"
-  }
-}
-```
-No authentication required, returns a User
+**역할**
 
-Required fields: email, password
+- 1인 개인 프로젝트
 
-## Registration:
-`POST /api/users`
+**기간**
 
-Example request body:
+- 2022.11
 
-```json
-{
-  "user":{
-    "username": "Jacob",
-    "email": "jake@jake.jake",
-    "password": "jakejake"
-  }
-}
-```
-No authentication required, returns a User
+**목적**
 
-Required fields: email, username, password
+- 그동안 주로 **aws lambda** 기반의 서비스를 간편하게 작성할 수 있는 [corgi](https://www.npmjs.com/package/vingle-corgi?activeTab=readme) 프레임워크를 사용
+- 익숙한 프레임워크에서 벗어나 범용적으로 사용되는 nest.js와 비교해보며 새로운 지식과 프로그래밍 관점 학습
+- 각 프레임워크들이 가지고 있는 목적과 **프로그래밍 철학을 비교**하며 배워 내 것으로 익히고자 함
 
-## Get Current User
-`GET /api/user`
 
-Authentication required, returns a User that's the current user
+**세부 기능**
 
-## Update User
-`PUT /api/user`
+- provider, module, controller 의 기본적인 프레임워크 구조에 맞춰 SNS에 필요한 REST API 구현
+- **postgresSQL, typeorm** 이용해 기본적인 CRUD 기능 구현
+- **Docker** 파일 작성 후 이미지 생성, 컨테이너 빌드
 
-Example request body:
+**사용 기술**
 
-```json
-{
-  "user":{
-    "email": "jake@jake.jake",
-    "bio": "I like to skateboard",
-    "image": "https://i.stack.imgur.com/xHWG8.jpg"
-  }
-}
-```
-Authentication required, returns the User
-
-Accepted fields: email, username, password, image, bio
-
-## Get Profile
-`GET /api/profiles/:username`
-
-Authentication optional, returns a Profile
-
-## Follow user
-`POST /api/profiles/:username/follow`
-
-Authentication required, returns a Profile
-
-No additional parameters required
-
-## Unfollow user
-`DELETE /api/profiles/:username/follow`
-
-Authentication required, returns a Profile
-
-No additional parameters required
-
-## List Articles
-`GET /api/articles`
-
-Returns most recent articles globally by default, provide tag, author or favorited query parameter to filter results
-
-Query Parameters:
-
-Filter by tag:
-
-`?tag=AngularJS`
-
-Filter by author:
-
-`?author=jake`
-
-Favorited by user:
-
-`?favorited=jake`
-
-Limit number of articles (default is 20):
-
-`?limit=20`
-
-Offset/skip number of articles (default is 0):
-
-`?offset=0`
-
-Authentication optional, will return multiple articles, ordered by most recent first
-
-## Feed Articles
-`GET /api/articles/feed`
-
-Can also take limit and offset query parameters like List Articles
-
-Authentication required, will return multiple articles created by followed users, ordered by most recent first.
-
-## Get Article
-`GET /api/articles/:slug`
-
-No authentication required, will return single article
-
-## Create Article
-`POST /api/articles`
-
-Example request body:
-
-```json
-{
-  "article": {
-    "title": "How to train your dragon",
-    "description": "Ever wonder how?",
-    "body": "You have to believe",
-    "tagList": ["reactjs", "angularjs", "dragons"]
-  }
-}
-```
-Authentication required, will return an Article
-
-Required fields: title, description, body
-
-Optional fields: tagList as an array of Strings
-
-## Update Article
-`PUT /api/articles/:slug`
-
-Example request body:
-```json
-{
-  "article": {
-    "title": "Did you train your dragon?"
-  }
-}
-```
-
-Authentication required, returns the updated Article
-
-Optional fields: title, description, body
-
-The slug also gets updated when the title is changed
-
-## Delete Article
-`DELETE /api/articles/:slug`
-
-Authentication required
-
-## Add Comments to an Article
-`POST /api/articles/:slug/comments`
-
-Example request body:
-```json
-{
-  "comment": {
-    "body": "His name was my name too."
-  }
-}
-```
-Authentication required, returns the created Comment
-
-Required field: body
-
-## Get Comments from an Article
-`GET /api/articles/:slug/comments`
-
-Authentication optional, returns multiple comments
-
-## Delete Comment
-`DELETE /api/articles/:slug/comments/:id`
-
-Authentication required
-
-## Favorite Article
-`POST /api/articles/:slug/favorite`
-
-Authentication required, returns the Article
-
-No additional parameters required
-
-## Unfavorite Article
-`DELETE /api/articles/:slug/favorite`
-
-Authentication required, returns the Article
-
-No additional parameters required
-
-## Get Tags
-`GET /api/tags`
-
-No authentication required, returns a List of Tags
-
+- language: Typescript
+- database: PostgresSQL
+- backend: node.js, nest.js, Docker, typeorm
